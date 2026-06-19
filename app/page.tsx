@@ -12,6 +12,7 @@ import { ProfileDetail } from '@/components/profile-detail'
 import { ProfileList } from '@/components/profile-list'
 import { useSettings } from '@/components/settings-provider'
 import { SettingsDialog } from '@/components/settings/settings-dialog'
+import { SwitchProfileDialog } from '@/components/switch-profile-dialog'
 import { TopBar } from '@/components/top-bar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import {
@@ -45,6 +46,7 @@ export default function Page() {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [adoptOpen, setAdoptOpen] = useState(false)
+  const [switchOpen, setSwitchOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -204,7 +206,7 @@ export default function Page() {
         {showFooter ? (
           <JarvisFooter
             services={services}
-            onSwitch={() => setPaletteOpen(true)}
+            onSwitch={() => setSwitchOpen(true)}
             onCreate={() => setCreateOpen(true)}
             onAdopt={() => setAdoptOpen(true)}
           />
@@ -237,6 +239,14 @@ export default function Page() {
           open={adoptOpen}
           onOpenChange={setAdoptOpen}
           onSubmit={handleAdopt}
+        />
+        <SwitchProfileDialog
+          open={switchOpen}
+          onOpenChange={setSwitchOpen}
+          profiles={profiles}
+          activeProfile={activeProfile}
+          dryRun={dryRun}
+          onConfirm={handleSwitch}
         />
         <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
