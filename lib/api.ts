@@ -129,18 +129,16 @@ export async function adoptProfile(
 }
 
 export async function getServiceHealth(): Promise<Service[]> {
-  const roll = (): Service['status'] => {
-    const r = Math.random()
-    if (r > 0.78) return 'offline'
-    if (r > 0.7) return 'checking'
-    return 'online'
-  }
+  // Deterministic baseline so all three dot states are always represented
+  // (green = online, amber = checking, gray = offline). The gateway flickers
+  // subtly between online/checking to feel live without losing the demo.
+  const gateway: Service['status'] = Math.random() > 0.5 ? 'online' : 'checking'
   return delay(
     [
-      { id: 'litellm', label: 'LITELLM', port: '4000', status: roll() },
-      { id: 'ngrok', label: 'NGROK', port: '4040', status: roll() },
-      { id: 'lmstudio', label: 'LM STUDIO', port: '1234', status: roll() },
-      { id: 'gateway', label: 'HERMES GATEWAY', status: roll() },
+      { id: 'litellm', label: 'LITELLM', port: '4000', status: 'online' },
+      { id: 'ngrok', label: 'NGROK', port: '4040', status: 'checking' },
+      { id: 'lmstudio', label: 'LM STUDIO', port: '1234', status: 'offline' },
+      { id: 'gateway', label: 'HERMES GATEWAY', status: gateway },
     ],
     150,
   )

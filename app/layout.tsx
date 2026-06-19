@@ -39,6 +39,9 @@ export default function RootLayout({
           toastOptions={{
             classNames: {
               toast: 'glass-strong !text-foreground',
+              success: '!border-success/40 [&_[data-icon]]:!text-success',
+              error:
+                '!border-danger/50 !bg-danger/10 [&_[data-title]]:!text-danger [&_[data-icon]]:!text-danger',
             },
           }}
         />

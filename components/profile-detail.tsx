@@ -2,17 +2,26 @@
 
 import {
   Check,
+  Copy,
   FolderOpen,
   Link2,
   Play,
   RefreshCw,
   SquarePen,
+  Terminal,
+  TriangleAlert,
   Zap,
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { CommandPreview } from '@/components/command-preview'
+import { Monogram } from '@/components/monogram'
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import {
   cliProfileHome,
   desktopShortcut,
@@ -21,6 +30,7 @@ import {
   switchCommand,
 } from '@/lib/commands'
 import type { Profile } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 type Props = {
   profile: Profile | null
@@ -32,16 +42,51 @@ function StatCard({
   label,
   value,
   action,
+  copyable,
 }: {
   label: string
   value: string
   action?: { label: string; onClick: () => void }
+  copyable?: boolean
 }) {
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      // ignore
+    }
+  }
   return (
-    <div className="glass flex flex-col justify-between gap-2 rounded-xl p-4">
-      <span className="eyebrow font-mono text-[10px] text-muted-foreground">
-        {label}
-      </span>
+    <div className="glass group flex flex-col justify-between gap-2 rounded-xl p-4">
+      <div className="flex items-center justify-between gap-2">
+        <span className="eyebrow font-mono text-[10px] text-muted-foreground">
+          {label}
+        </span>
+        {copyable ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  onClick={copy}
+                  aria-label={`Copy ${label}`}
+                  className="text-faint opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+                />
+              }
+            >
+              {copied ? (
+                <Check className="size-3.5 text-success" />
+              ) : (
+                <Copy className="size-3.5" />
+              )}
+            </TooltipTrigger>
+            <TooltipContent>{copied ? 'Copied' : 'Copy full path'}</TooltipContent>
+          </Tooltip>
+        ) : null}
+      </div>
       <p className="break-all font-mono text-[12px] leading-relaxed text-foreground/90">
         {value}
       </p>
@@ -106,21 +151,50 @@ export function ProfileDetail({ profile, onSwitch, onAction }: Props) {
       <div className="scrollbar-thin flex-1 overflow-y-auto p-6">
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
-            <span className="eyebrow text-[10px] text-muted-foreground">
-              {isActive ? 'Active profile' : 'Selected profile'}
-            </span>
-            <div className="mt-1 flex items-center gap-3">
-              <h1 className="truncate text-2xl font-semibold tracking-tight">
-                {profile.name}
-              </h1>
-              <span className="rounded-md border border-border bg-secondary px-2 py-1 font-mono text-[11px] text-muted-foreground">
-                {profile.slug}
+          <div className="flex min-w-0 items-start gap-4">
+            <Monogram name={profile.name} size="lg" active={isActive} />
+            <div className="min-w-0">
+              <span className="eyebrow text-[10px] text-muted-foreground">
+                {isActive ? 'Active profile' : 'Selected profile'}
               </span>
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <h1 className="truncate text-2xl font-semibold tracking-tight">
+                  {profile.name}
+                </h1>
+                <span className="rounded-md border border-border bg-secondary px-2 py-1 font-mono text-[11px] text-muted-foreground">
+                  {profile.slug}
+                </span>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <span
+                        className={cn(
+                          'inline-flex cursor-default items-center gap-1.5 rounded-full border px-2 py-1 text-[10px] font-medium',
+                          profile.cliProfile
+                            ? 'border-success/25 text-success'
+                            : 'border-warning/25 text-warning',
+                        )}
+                      />
+                    }
+                  >
+                    {profile.cliProfile ? (
+                      <Terminal className="size-3" />
+                    ) : (
+                      <TriangleAlert className="size-3" />
+                    )}
+                    {profile.cliProfile ? 'CLI ok' : 'CLI missing'}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {profile.cliProfile
+                      ? 'A matching Hermes CLI profile exists — terminal sessions resolve to this workspace.'
+                      : 'No matching CLI profile yet — switching will scaffold one for terminal use.'}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <p className="mt-2 max-w-lg text-sm text-muted-foreground">
+                {profile.description}
+              </p>
             </div>
-            <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-              {profile.description}
-            </p>
           </div>
 
           {isActive ? (
@@ -144,6 +218,7 @@ export function ProfileDetail({ profile, onSwitch, onAction }: Props) {
           <StatCard
             label="Workspace path"
             value={profile.path}
+            copyable
             action={{
               label: 'Open Folder',
               onClick: () =>

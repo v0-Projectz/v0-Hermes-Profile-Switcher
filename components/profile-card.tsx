@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from 'motion/react'
 import { forwardRef } from 'react'
+import { Monogram } from '@/components/monogram'
 import type { Profile } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -50,23 +51,31 @@ export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
         ) : null}
 
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="truncate text-[15px] font-semibold tracking-tight text-foreground">
-                {profile.name}
-              </h3>
-              {isActive ? (
-                <span className="eyebrow rounded-full border border-gold/30 bg-accent px-2 py-[2px] text-[9px] font-medium text-gold">
-                  Active
-                </span>
-              ) : null}
+          <div className="flex min-w-0 items-center gap-3">
+            <Monogram name={profile.name} active={isActive} />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="truncate text-[15px] font-semibold tracking-tight text-foreground">
+                  {profile.name}
+                </h3>
+                {isActive ? (
+                  <span className="eyebrow rounded-full border border-gold/30 bg-accent px-2 py-[2px] text-[9px] font-medium text-gold">
+                    Active
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                {profile.slug}
+              </p>
             </div>
-            <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-              {profile.slug}
-            </p>
           </div>
 
           <span
+            title={
+              profile.cliProfile
+                ? 'A matching Hermes CLI profile exists — terminal sessions resolve to this workspace.'
+                : 'No matching CLI profile yet — switching will scaffold one for terminal use.'
+            }
             className={cn(
               'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-1 text-[10px] font-medium',
               profile.cliProfile

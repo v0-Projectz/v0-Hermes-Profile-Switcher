@@ -18,7 +18,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
   return (
     <header className="glass flex items-center gap-4 rounded-2xl px-4 py-3">
       {/* Wordmark */}
-      <div className="flex shrink-0 items-center gap-2.5">
+      <div className="glow-wordmark flex shrink-0 items-center gap-2.5">
         <span
           className="flex size-7 rotate-45 items-center justify-center rounded-[6px] border border-gold/40 bg-accent"
           aria-hidden

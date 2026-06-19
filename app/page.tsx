@@ -10,6 +10,7 @@ import { ProfileCommandPalette } from '@/components/profile-command-palette'
 import { ProfileDetail } from '@/components/profile-detail'
 import { ProfileList } from '@/components/profile-list'
 import { TopBar } from '@/components/top-bar'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import {
   adoptProfile,
   createProfile,
@@ -136,7 +137,10 @@ export default function Page() {
   }, [])
 
   return (
-    <div className="flex h-[100dvh] flex-col gap-3 overflow-hidden p-3 sm:p-4">
+    <TooltipProvider delay={250}>
+      <div aria-hidden className="app-vignette" />
+      <div aria-hidden className="app-grain" />
+      <div className="relative z-10 flex h-[100dvh] flex-col gap-3 overflow-hidden p-3 sm:p-4">
       <TopBar
         ref={searchRef}
         query={query}
@@ -200,6 +204,7 @@ export default function Page() {
         onOpenChange={setAdoptOpen}
         onSubmit={handleAdopt}
       />
-    </div>
+      </div>
+    </TooltipProvider>
   )
 }
