@@ -39,20 +39,13 @@ export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
         className={cn(
           'group relative w-full overflow-hidden rounded-xl border p-4 text-left transition-colors',
           'glass',
-          selected
-            ? 'border-gold/40'
-            : 'border-border hover:border-gold/20',
-          isActive && 'animate-pulse-gold',
+          isActive
+            ? 'ring-active border-success/40'
+            : selected
+              ? 'border-gold/40'
+              : 'border-border hover:border-gold/20',
         )}
       >
-        {isActive ? (
-          <span
-            aria-hidden
-            className="absolute inset-y-0 left-0 w-[3px] bg-gold"
-            style={{ boxShadow: '0 0 14px rgba(245,184,65,0.7)' }}
-          />
-        ) : null}
-
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             {showMonograms ? (
@@ -64,7 +57,7 @@ export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
                   {profile.name}
                 </h3>
                 {isActive ? (
-                  <span className="eyebrow rounded-full border border-gold/30 bg-accent px-2 py-[2px] text-[9px] font-medium text-gold">
+                  <span className="eyebrow rounded-full border border-success/30 bg-success/10 px-2 py-[2px] text-[9px] font-medium text-success">
                     Active
                   </span>
                 ) : null}

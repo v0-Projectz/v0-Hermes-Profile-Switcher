@@ -32,15 +32,15 @@ export function ServiceCapsule({
     <div className={cn('flex items-center gap-2', SHAPE[style])}>
       <motion.span
         className="size-2 rounded-full"
-        style={{ background: color, boxShadow: `0 0 8px ${color}` }}
+        style={{ background: color, boxShadow: `0 0 5px ${color}` }}
         animate={
           service.status === 'offline'
-            ? { opacity: 0.6 }
-            : { opacity: [0.5, 1, 0.5] }
+            ? { opacity: 0.45 }
+            : { opacity: [0.6, 1, 0.6] }
         }
         transition={{
-          duration: service.status === 'checking' ? 0.8 : 2,
-          repeat: Infinity,
+          duration: 3,
+          repeat: service.status === 'offline' ? 0 : Infinity,
           ease: 'easeInOut',
         }}
         aria-hidden

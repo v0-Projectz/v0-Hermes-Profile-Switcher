@@ -263,6 +263,31 @@ html[data-theme='light'] .glass-strong {
   animation: pulseGold 2.8s ease-in-out infinite;
 }
 
+/* Green "active profile" treatment — distinct from the gold selection accent. */
+.ring-active {
+  box-shadow:
+    0 0 0 1px rgba(63, 185, 80, 0.35),
+    0 0 22px rgba(63, 185, 80, 0.1);
+}
+
+@keyframes pulseGreen {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(63, 185, 80, 0.55),
+      0 0 12px rgba(63, 185, 80, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(63, 185, 80, 0.85),
+      0 0 20px rgba(63, 185, 80, 0.5);
+  }
+}
+
+.animate-pulse-green {
+  animation: pulseGreen 3s ease-in-out infinite;
+}
+
 @keyframes shimmerSweep {
   0% {
     transform: translateX(-120%);
@@ -283,6 +308,7 @@ html[data-theme='light'] .glass-strong {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse-gold,
+  .animate-pulse-green,
   .animate-shimmer {
     animation: none;
   }
