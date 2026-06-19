@@ -2,6 +2,7 @@
 
 import { Search, Settings } from 'lucide-react'
 import { forwardRef } from 'react'
+import { ExtrasMenu } from '@/components/extras-menu'
 import type { Profile } from '@/lib/types'
 
 type Props = {
@@ -62,6 +63,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
             {activeProfile?.name ?? 'None'}
           </span>
         </div>
+        <ExtrasMenu />
         <button
           type="button"
           aria-label="Settings"
