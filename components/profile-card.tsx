@@ -108,7 +108,11 @@ export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
           aria-hidden
           className={cn(
             'absolute right-0 top-1/2 h-8 w-[2px] -translate-y-1/2 rounded-full transition-colors',
-            selected ? 'bg-gold/60' : 'bg-border group-hover:bg-gold/30',
+            isActive
+              ? 'bg-success/70'
+              : selected
+                ? 'bg-gold/60'
+                : 'bg-border group-hover:bg-gold/30',
           )}
         />
       </motion.button>

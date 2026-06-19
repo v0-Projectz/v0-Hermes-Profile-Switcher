@@ -94,7 +94,7 @@ function StatCard({
         <button
           type="button"
           onClick={action.onClick}
-          className="mt-1 inline-flex w-fit items-center gap-1 text-[11px] text-gold transition-opacity hover:opacity-80"
+          className="mt-1 inline-flex w-fit items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
         >
           <FolderOpen className="size-3" /> {action.label}
         </button>
