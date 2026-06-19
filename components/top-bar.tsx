@@ -53,11 +53,8 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
 
       {/* Active profile capsule + settings */}
       <div className="flex shrink-0 items-center gap-2">
-        <div className="flex items-center gap-2 rounded-full border border-success/25 bg-success/10 px-3 py-1.5">
-          <span
-            className="size-2 rounded-full bg-success shadow-[0_0_8px_rgba(63,185,80,0.7)]"
-            aria-hidden
-          />
+        <div className="active-border active-bg flex items-center gap-2 rounded-full border px-3 py-1.5">
+          <span className="active-dot size-2 rounded-full" aria-hidden />
           <span className="eyebrow text-[9px] text-muted-foreground">
             Active
           </span>

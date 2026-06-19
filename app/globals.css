@@ -84,6 +84,8 @@
 
   /* Accent recoloring hooks (driven live by SettingsProvider) */
   --accent-rgb: 245, 184, 65;
+  /* Active-profile identity color (swappable green/gold via Settings). */
+  --active-rgb: 63, 185, 80;
   --accent-glow: 1;
   --glass-blur: 20px;
   --glass-sat: 140%;
@@ -263,29 +265,61 @@ html[data-theme='light'] .glass-strong {
   animation: pulseGold 2.8s ease-in-out infinite;
 }
 
-/* Green "active profile" treatment — distinct from the gold selection accent. */
+/* "Active profile" treatment — distinct from the gold selection accent.
+   Color is driven by --active-rgb, which Settings can swap (green <-> gold). */
 .ring-active {
   box-shadow:
-    0 0 0 1px rgba(63, 185, 80, 0.35),
-    0 0 22px rgba(63, 185, 80, 0.1);
+    0 0 0 1px rgba(var(--active-rgb), 0.35),
+    0 0 22px rgba(var(--active-rgb), 0.1);
 }
 
-@keyframes pulseGreen {
+/* Active-identity helpers (consume the swappable --active-rgb token). */
+.active-text {
+  color: rgb(var(--active-rgb));
+}
+.active-border {
+  border-color: rgba(var(--active-rgb), 0.4);
+}
+.active-bg {
+  background-color: rgba(var(--active-rgb), 0.1);
+}
+.active-dot {
+  background: rgb(var(--active-rgb));
+  box-shadow: 0 0 8px rgba(var(--active-rgb), 0.7);
+}
+
+@keyframes pulseActive {
   0%,
   100% {
     box-shadow:
-      0 0 0 1px rgba(63, 185, 80, 0.55),
-      0 0 12px rgba(63, 185, 80, 0.3);
+      0 0 0 1px rgba(var(--active-rgb), 0.55),
+      0 0 12px rgba(var(--active-rgb), 0.3);
   }
   50% {
     box-shadow:
-      0 0 0 1px rgba(63, 185, 80, 0.85),
-      0 0 20px rgba(63, 185, 80, 0.5);
+      0 0 0 1px rgba(var(--active-rgb), 0.85),
+      0 0 20px rgba(var(--active-rgb), 0.5);
   }
 }
 
-.animate-pulse-green {
-  animation: pulseGreen 3s ease-in-out infinite;
+.animate-pulse-active {
+  animation: pulseActive 3s ease-in-out infinite;
+}
+
+/* Slow, calm status dot used as the card LED indicator. */
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+.animate-pulse-dot {
+  animation: pulseDot 3.2s ease-in-out infinite;
 }
 
 @keyframes shimmerSweep {
@@ -308,7 +342,8 @@ html[data-theme='light'] .glass-strong {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse-gold,
-  .animate-pulse-green,
+  .animate-pulse-active,
+  .animate-pulse-dot,
   .animate-shimmer {
     animation: none;
   }

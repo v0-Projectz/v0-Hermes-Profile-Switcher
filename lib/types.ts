@@ -54,6 +54,7 @@ export type Settings = {
   appearance: {
     theme: 'dark' | 'light' | 'system'
     accentColor: string
+    activeColor: 'green' | 'gold'
     accentIntensity: 'subtle' | 'medium' | 'bold'
     glassIntensity: 'low' | 'medium' | 'high'
     filmGrain: boolean

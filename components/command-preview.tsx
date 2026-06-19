@@ -53,11 +53,11 @@ export function CommandPreview({
         </button>
       </div>
       <div className="flex items-start gap-2 px-3 py-3 font-mono text-[12.5px] leading-relaxed">
-        <span className="select-none text-gold">{'>'}</span>
+        <span className="select-none text-muted-foreground">{'>'}</span>
         <code className="whitespace-pre-wrap break-all text-foreground/90">
           {command}
         </code>
-        <span className="ml-0.5 inline-block h-[15px] w-[7px] animate-pulse bg-gold align-middle" />
+        <span className="ml-0.5 inline-block h-[15px] w-[7px] animate-pulse bg-muted-foreground align-middle" />
       </div>
     </div>
   )

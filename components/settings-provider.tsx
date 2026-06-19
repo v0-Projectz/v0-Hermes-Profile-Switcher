@@ -43,6 +43,12 @@ function applyAppearance(a: Appearance) {
   root.style.setProperty('--accent-rgb', hexToRgb(a.accentColor))
   root.style.setProperty('--accent-glow', GLOW_BY_INTENSITY[a.accentIntensity])
 
+  // Active-profile identity color — Saber Green (default) or Jedi Gold.
+  root.style.setProperty(
+    '--active-rgb',
+    a.activeColor === 'gold' ? '245, 184, 65' : '63, 185, 80',
+  )
+
   // Font family swap
   root.style.setProperty(
     '--font-sans',

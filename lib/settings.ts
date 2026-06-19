@@ -31,6 +31,7 @@ export const DEFAULT_SETTINGS: Settings = {
   appearance: {
     theme: 'dark',
     accentColor: '#F5B841',
+    activeColor: 'green',
     accentIntensity: 'medium',
     glassIntensity: 'medium',
     filmGrain: true,

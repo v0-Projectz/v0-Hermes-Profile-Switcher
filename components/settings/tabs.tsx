@@ -228,6 +228,23 @@ export function AppearanceTab({ draft, setSection }: TabProps) {
           </div>
         </SettingRow>
         <SettingRow
+          label="Active Profile Color"
+          helper="Green reads as a distinct status; Gold restores the classic look."
+        >
+          <SettingSelect
+            value={a.activeColor}
+            onValueChange={(v) =>
+              setSection('appearance', {
+                activeColor: v as Settings['appearance']['activeColor'],
+              })
+            }
+            options={[
+              { value: 'green', label: 'Saber Green' },
+              { value: 'gold', label: 'Jedi Gold' },
+            ]}
+          />
+        </SettingRow>
+        <SettingRow
           label="Accent Intensity"
           helper="Controls glow strength and border alpha."
         >

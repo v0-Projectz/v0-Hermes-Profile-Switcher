@@ -51,9 +51,10 @@ export function JarvisFooter({ services, onSwitch, onCreate, onAdopt }: Props) {
           <Repeat className="size-3.5" /> Switch Profile
         </Button>
         <Button
+          variant="outline"
           size="sm"
           onClick={onCreate}
-          className="gap-1.5 bg-gold font-medium text-primary-foreground hover:bg-gold/90"
+          className="gap-1.5 border-border bg-secondary/40 hover:border-gold/30 hover:text-gold"
         >
           <Plus className="size-3.5" /> Create New
         </Button>

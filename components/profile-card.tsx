@@ -40,12 +40,25 @@ export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
           'group relative w-full overflow-hidden rounded-xl border p-4 text-left transition-colors',
           'glass',
           isActive
-            ? 'ring-active border-success/40'
+            ? 'ring-active active-border'
             : selected
               ? 'border-gold/40'
               : 'border-border hover:border-gold/20',
         )}
       >
+        {/* top-left status LED */}
+        <span
+          aria-hidden
+          className={cn(
+            'absolute left-3 top-3 size-1.5 rounded-full',
+            isActive
+              ? 'active-dot animate-pulse-dot'
+              : selected
+                ? 'bg-gold/60'
+                : 'bg-muted-foreground/30',
+          )}
+        />
+
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             {showMonograms ? (
@@ -57,7 +70,7 @@ export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
                   {profile.name}
                 </h3>
                 {isActive ? (
-                  <span className="eyebrow rounded-full border border-success/30 bg-success/10 px-2 py-[2px] text-[9px] font-medium text-success">
+                  <span className="eyebrow active-border active-bg active-text rounded-full border px-2 py-[2px] text-[9px] font-medium">
                     Active
                   </span>
                 ) : null}
@@ -108,12 +121,14 @@ export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
           aria-hidden
           className={cn(
             'absolute right-0 top-1/2 h-8 w-[2px] -translate-y-1/2 rounded-full transition-colors',
-            isActive
-              ? 'bg-success/70'
-              : selected
-                ? 'bg-gold/60'
-                : 'bg-border group-hover:bg-gold/30',
+            !isActive &&
+              (selected ? 'bg-gold/60' : 'bg-border group-hover:bg-gold/30'),
           )}
+          style={
+            isActive
+              ? { background: 'rgba(var(--active-rgb), 0.7)' }
+              : undefined
+          }
         />
       </motion.button>
     )

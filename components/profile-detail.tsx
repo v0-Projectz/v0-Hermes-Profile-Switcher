@@ -198,7 +198,7 @@ export function ProfileDetail({ profile, onSwitch, onAction }: Props) {
           </div>
 
           {isActive ? (
-            <span className="inline-flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm font-medium text-success">
+            <span className="active-border active-bg active-text inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium">
               <Check className="size-4" /> Active
             </span>
           ) : (
