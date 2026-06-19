@@ -9,10 +9,11 @@ type Props = {
   onQueryChange: (q: string) => void
   onSearchFocus: () => void
   activeProfile: Profile | null
+  onOpenSettings: () => void
 }
 
 export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
-  { query, onQueryChange, onSearchFocus, activeProfile },
+  { query, onQueryChange, onSearchFocus, activeProfile, onOpenSettings },
   ref,
 ) {
   return (
@@ -67,6 +68,7 @@ export const TopBar = forwardRef<HTMLInputElement, Props>(function TopBar(
         <button
           type="button"
           aria-label="Settings"
+          onClick={onOpenSettings}
           className="flex size-9 items-center justify-center rounded-xl border border-border bg-secondary/40 text-muted-foreground transition-colors hover:border-gold/30 hover:text-gold"
         >
           <Settings className="size-4" />

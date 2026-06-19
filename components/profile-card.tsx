@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from 'motion/react'
 import { forwardRef } from 'react'
 import { Monogram } from '@/components/monogram'
+import { useSettings } from '@/components/settings-provider'
 import type { Profile } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +17,8 @@ type Props = {
 export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
   function ProfileCard({ profile, selected, onSelect, onSwitch }, ref) {
     const reduce = useReducedMotion()
+    const { settings } = useSettings()
+    const { showMonograms, showCliStatus } = settings.appearance
     const isActive = !!profile.active
 
     return (
@@ -52,7 +55,9 @@ export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
 
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <Monogram name={profile.name} active={isActive} />
+            {showMonograms ? (
+              <Monogram name={profile.name} active={isActive} />
+            ) : null}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="truncate text-[15px] font-semibold tracking-tight text-foreground">
@@ -70,30 +75,32 @@ export const ProfileCard = forwardRef<HTMLButtonElement, Props>(
             </div>
           </div>
 
-          <span
-            title={
-              profile.cliProfile
-                ? 'A matching Hermes CLI profile exists — terminal sessions resolve to this workspace.'
-                : 'No matching CLI profile yet — switching will scaffold one for terminal use.'
-            }
-            className={cn(
-              'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-1 text-[10px] font-medium',
-              profile.cliProfile
-                ? 'border-success/25 text-success'
-                : 'border-warning/25 text-warning',
-            )}
-          >
+          {showCliStatus ? (
             <span
-              className="size-1.5 rounded-full"
-              style={{
-                background: profile.cliProfile
-                  ? 'var(--success)'
-                  : 'var(--warning)',
-              }}
-              aria-hidden
-            />
-            {profile.cliProfile ? 'CLI ok' : 'CLI missing'}
-          </span>
+              title={
+                profile.cliProfile
+                  ? 'A matching Hermes CLI profile exists — terminal sessions resolve to this workspace.'
+                  : 'No matching CLI profile yet — switching will scaffold one for terminal use.'
+              }
+              className={cn(
+                'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-1 text-[10px] font-medium',
+                profile.cliProfile
+                  ? 'border-success/25 text-success'
+                  : 'border-warning/25 text-warning',
+              )}
+            >
+              <span
+                className="size-1.5 rounded-full"
+                style={{
+                  background: profile.cliProfile
+                    ? 'var(--success)'
+                    : 'var(--warning)',
+                }}
+                aria-hidden
+              />
+              {profile.cliProfile ? 'CLI ok' : 'CLI missing'}
+            </span>
+          ) : null}
         </div>
 
         <p

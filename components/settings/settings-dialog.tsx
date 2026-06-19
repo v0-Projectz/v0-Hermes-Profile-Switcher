@@ -151,7 +151,7 @@ export function SettingsDialog({
       >
         <DialogContent
           showCloseButton={false}
-          className="glass-strong flex h-[88vh] w-[min(1100px,94vw)] max-w-none flex-col gap-0 overflow-hidden border-border p-0"
+          className="glass-strong flex h-[88vh] !w-[min(1100px,94vw)] !max-w-none flex-col gap-0 overflow-hidden border-border p-0 sm:!max-w-none"
         >
           <motion.div
             initial={{ scale: 0.96, opacity: 0 }}

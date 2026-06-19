@@ -87,6 +87,26 @@ export const DEFAULT_SETTINGS: Settings = {
 export const APP_VERSION = '1.0.0'
 export const HERMES_DESKTOP_VERSION = '0.9.4'
 
+/**
+ * Test whether a keyboard event matches a human-readable binding string such
+ * as "Ctrl+K", "/", "Ctrl+,". Modifier order is irrelevant; Cmd maps to Ctrl.
+ */
+export function matchesShortcut(e: KeyboardEvent, binding: string): boolean {
+  if (!binding) return false
+  const parts = binding.toLowerCase().split('+').map((p) => p.trim())
+  const needCtrl = parts.includes('ctrl') || parts.includes('cmd')
+  const needShift = parts.includes('shift')
+  const needAlt = parts.includes('alt')
+  const key = parts[parts.length - 1]
+
+  if (needCtrl !== (e.ctrlKey || e.metaKey)) return false
+  if (needShift !== e.shiftKey) return false
+  if (needAlt !== e.altKey) return false
+
+  const eventKey = e.key.toLowerCase()
+  return eventKey === key
+}
+
 /** Convert a hex color (#RRGGBB) to an "r, g, b" string for rgba() use. */
 export function hexToRgb(hex: string): string {
   const clean = hex.replace('#', '')

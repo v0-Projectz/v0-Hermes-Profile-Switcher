@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Space_Grotesk } from 'next/font/google'
+import { SettingsProvider } from '@/components/settings-provider'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -37,7 +38,7 @@ export default function RootLayout({
       className={`dark ${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} bg-background`}
     >
       <body className="font-sans antialiased">
-        {children}
+        <SettingsProvider>{children}</SettingsProvider>
         <Toaster
           position="top-right"
           toastOptions={{

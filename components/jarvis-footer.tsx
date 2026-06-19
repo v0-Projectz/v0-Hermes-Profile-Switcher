@@ -2,6 +2,7 @@
 
 import { FolderPlus, Plus, Repeat } from 'lucide-react'
 import { ServiceCapsule } from '@/components/service-capsule'
+import { useSettings } from '@/components/settings-provider'
 import { Waveform } from '@/components/waveform'
 import { Button } from '@/components/ui/button'
 import type { Service } from '@/lib/types'
@@ -14,11 +15,14 @@ type Props = {
 }
 
 export function JarvisFooter({ services, onSwitch, onCreate, onAdopt }: Props) {
+  const { settings } = useSettings()
+  const c = settings.console
+
   return (
     <footer className="glass-strong flex flex-wrap items-center justify-between gap-4 rounded-2xl px-5 py-3">
       {/* Left: waveform */}
       <div className="flex items-center gap-3">
-        <Waveform />
+        <Waveform active={c.waveformAnimation} color={c.waveformColor} />
         <span className="eyebrow font-mono text-[10px] text-gold">
           J.A.R.V.I.S. Active
         </span>
@@ -27,7 +31,12 @@ export function JarvisFooter({ services, onSwitch, onCreate, onAdopt }: Props) {
       {/* Center: service health */}
       <div className="flex flex-wrap items-center justify-center gap-2">
         {services.map((s) => (
-          <ServiceCapsule key={s.id} service={s} />
+          <ServiceCapsule
+            key={s.id}
+            service={s}
+            showPort={c.showPorts}
+            style={c.capsuleStyle}
+          />
         ))}
       </div>
 

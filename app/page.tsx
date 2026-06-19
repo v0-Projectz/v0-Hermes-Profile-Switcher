@@ -5,39 +5,47 @@ import { toast } from 'sonner'
 import useSWR from 'swr'
 import { AdoptProfileDialog } from '@/components/adopt-profile-dialog'
 import { CreateProfileDialog } from '@/components/create-profile-dialog'
+import { DryRunBanner } from '@/components/dry-run-banner'
 import { JarvisFooter } from '@/components/jarvis-footer'
 import { ProfileCommandPalette } from '@/components/profile-command-palette'
 import { ProfileDetail } from '@/components/profile-detail'
 import { ProfileList } from '@/components/profile-list'
+import { useSettings } from '@/components/settings-provider'
+import { SettingsDialog } from '@/components/settings/settings-dialog'
 import { TopBar } from '@/components/top-bar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import {
   adoptProfile,
   createProfile,
-  getServiceHealth,
   listProfiles,
+  probeServices,
   switchProfile,
 } from '@/lib/api'
-import type {
-  AdoptProfileInput,
-  CreateProfileInput,
-} from '@/lib/types'
+import { matchesShortcut } from '@/lib/settings'
+import type { AdoptProfileInput, CreateProfileInput } from '@/lib/types'
 
 export default function Page() {
-  const {
-    data: profiles = [],
-    mutate: mutateProfiles,
-  } = useSWR('profiles', listProfiles, { revalidateOnFocus: false })
+  const { settings } = useSettings()
 
-  const { data: services = [] } = useSWR('health', getServiceHealth, {
-    refreshInterval: 4000,
-  })
+  const { data: profiles = [], mutate: mutateProfiles } = useSWR(
+    'profiles',
+    listProfiles,
+    { revalidateOnFocus: false },
+  )
+
+  const enabledServices = settings.console.services
+  const { data: services = [] } = useSWR(
+    ['health', enabledServices],
+    () => probeServices(enabledServices),
+    { refreshInterval: settings.console.pollIntervalMs },
+  )
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [adoptOpen, setAdoptOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
 
   const activeProfile = useMemo(
@@ -68,21 +76,36 @@ export default function Page() {
     [profiles, selectedSlug],
   )
 
+  const dryRun = settings.advanced.dryRun
+
   const handleSwitch = useCallback(
     async (slug: string) => {
       setSelectedSlug(slug)
+      if (dryRun) {
+        const cmd = `.\\Switch-Hermes-Profile.ps1 -Action switch -Profile ${slug}`
+        console.log(JSON.stringify({ action: 'switch', command: cmd }))
+        toast.message('Dry-Run: Switch Profile', { description: cmd })
+        return
+      }
       const res = await switchProfile(slug)
       await mutateProfiles()
       if (res.ok) toast.success(res.message)
       else toast.error(res.message)
     },
-    [mutateProfiles],
+    [mutateProfiles, dryRun],
   )
 
-  const handleAction = useCallback((label: string, command: string) => {
-    console.log(JSON.stringify({ action: label, command }))
-    toast.success(`${label}`, { description: command })
-  }, [])
+  const handleAction = useCallback(
+    (label: string, command: string) => {
+      console.log(JSON.stringify({ action: label, command }))
+      if (dryRun) {
+        toast.message(`Dry-Run: ${label}`, { description: command })
+      } else {
+        toast.success(label, { description: command })
+      }
+    },
+    [dryRun],
+  )
 
   const handleCreate = useCallback(
     async (input: CreateProfileInput) => {
@@ -112,8 +135,9 @@ export default function Page() {
     [mutateProfiles],
   )
 
-  // Keyboard shortcuts: Ctrl+K palette, Ctrl+N create, / focus search.
+  // Keyboard shortcuts driven by the configurable bindings in settings.
   useEffect(() => {
+    const sc = settings.shortcuts
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
       const typing =
@@ -121,89 +145,100 @@ export default function Page() {
         target?.tagName === 'TEXTAREA' ||
         target?.isContentEditable
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      if (matchesShortcut(e, sc.palette)) {
         e.preventDefault()
         setPaletteOpen((o) => !o)
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+      } else if (matchesShortcut(e, sc.new)) {
         e.preventDefault()
         setCreateOpen(true)
-      } else if (e.key === '/' && !typing) {
+      } else if (matchesShortcut(e, sc.settings)) {
+        e.preventDefault()
+        setSettingsOpen(true)
+      } else if (!typing && matchesShortcut(e, sc.search)) {
         e.preventDefault()
         searchRef.current?.focus()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [])
+  }, [settings.shortcuts])
+
+  const showFooter = settings.console.showFooter
 
   return (
     <TooltipProvider delay={250}>
       <div aria-hidden className="app-vignette" />
       <div aria-hidden className="app-grain" />
       <div className="relative z-10 flex h-[100dvh] flex-col gap-3 overflow-hidden p-3 sm:p-4">
-      <TopBar
-        ref={searchRef}
-        query={query}
-        onQueryChange={setQuery}
-        onSearchFocus={() => {}}
-        activeProfile={activeProfile}
-      />
+        <TopBar
+          ref={searchRef}
+          query={query}
+          onQueryChange={setQuery}
+          onSearchFocus={() => {}}
+          activeProfile={activeProfile}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
 
-      <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[38fr_62fr]">
-        <div className="min-h-0">
-          <ProfileList
-            profiles={filtered}
-            selectedSlug={selectedSlug}
-            onSelect={setSelectedSlug}
-            onSwitch={handleSwitch}
+        <DryRunBanner />
+
+        <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[38fr_62fr]">
+          <div className="min-h-0">
+            <ProfileList
+              profiles={filtered}
+              selectedSlug={selectedSlug}
+              onSelect={setSelectedSlug}
+              onSwitch={handleSwitch}
+              onCreate={() => setCreateOpen(true)}
+              onAdopt={() => setAdoptOpen(true)}
+            />
+          </div>
+          <div className="min-h-0">
+            <ProfileDetail
+              profile={selectedProfile}
+              onSwitch={handleSwitch}
+              onAction={handleAction}
+            />
+          </div>
+        </main>
+
+        {showFooter ? (
+          <JarvisFooter
+            services={services}
+            onSwitch={() => setPaletteOpen(true)}
             onCreate={() => setCreateOpen(true)}
             onAdopt={() => setAdoptOpen(true)}
           />
-        </div>
-        <div className="min-h-0">
-          <ProfileDetail
-            profile={selectedProfile}
-            onSwitch={handleSwitch}
-            onAction={handleAction}
-          />
-        </div>
-      </main>
+        ) : null}
 
-      <JarvisFooter
-        services={services}
-        onSwitch={() => setPaletteOpen(true)}
-        onCreate={() => setCreateOpen(true)}
-        onAdopt={() => setAdoptOpen(true)}
-      />
+        <ProfileCommandPalette
+          open={paletteOpen}
+          onOpenChange={setPaletteOpen}
+          profiles={profiles}
+          onSwitch={(slug) => {
+            setPaletteOpen(false)
+            handleSwitch(slug)
+          }}
+          onCreate={() => {
+            setPaletteOpen(false)
+            setCreateOpen(true)
+          }}
+          onAdopt={() => {
+            setPaletteOpen(false)
+            setAdoptOpen(true)
+          }}
+        />
 
-      <ProfileCommandPalette
-        open={paletteOpen}
-        onOpenChange={setPaletteOpen}
-        profiles={profiles}
-        onSwitch={(slug) => {
-          setPaletteOpen(false)
-          handleSwitch(slug)
-        }}
-        onCreate={() => {
-          setPaletteOpen(false)
-          setCreateOpen(true)
-        }}
-        onAdopt={() => {
-          setPaletteOpen(false)
-          setAdoptOpen(true)
-        }}
-      />
-
-      <CreateProfileDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        onSubmit={handleCreate}
-      />
-      <AdoptProfileDialog
-        open={adoptOpen}
-        onOpenChange={setAdoptOpen}
-        onSubmit={handleAdopt}
-      />
+        <CreateProfileDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onSubmit={handleCreate}
+        />
+        <AdoptProfileDialog
+          open={adoptOpen}
+          onOpenChange={setAdoptOpen}
+          onSubmit={handleAdopt}
+        />
+        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     </TooltipProvider>
   )

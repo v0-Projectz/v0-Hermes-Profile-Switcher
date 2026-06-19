@@ -766,7 +766,7 @@ export function AdvancedTab({ draft, setSection, onOpenLastOutput }: TabProps) {
 }
 
 /* ------------------------------ ABOUT ------------------------------ */
-export function AboutTab() {
+export function AboutTab(_props: TabProps) {
   const [count, setCount] = useState<number | null>(null)
   const [status, setStatus] = useState<'ok' | 'unreachable' | 'checking'>(
     'checking',
