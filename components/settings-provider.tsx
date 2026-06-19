@@ -90,6 +90,27 @@ function applyAppearance(a: Appearance) {
   } else {
     root.style.removeProperty('--background')
   }
+
+  // Background image backdrop (blur / brightness / overlay tint / vignette).
+  const hasImage = Boolean(a.backgroundImage)
+  root.dataset.bgImage = hasImage ? 'true' : 'false'
+  root.style.setProperty(
+    '--bg-image',
+    hasImage ? `url("${a.backgroundImage}")` : 'none',
+  )
+  root.style.setProperty('--bg-image-blur', `${a.backgroundImageBlur}px`)
+  root.style.setProperty(
+    '--bg-image-brightness',
+    String(a.backgroundImageBrightness / 100),
+  )
+  root.style.setProperty(
+    '--bg-overlay-color',
+    `rgba(${hexToRgb(a.backgroundOverlayColor)}, ${a.backgroundOverlayOpacity / 100})`,
+  )
+  root.style.setProperty(
+    '--bg-vignette-alpha',
+    String(a.backgroundImageVignette / 100),
+  )
 }
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {

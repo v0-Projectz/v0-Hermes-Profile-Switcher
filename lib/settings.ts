@@ -27,6 +27,14 @@ export const BACKGROUND_PRESETS: { id: string; label: string; value: string }[] 
     { id: 'forest', label: 'Forest', value: '#070c09' },
   ]
 
+export const OVERLAY_PRESETS: { id: string; label: string; value: string }[] = [
+  { id: 'black', label: 'Black', value: '#070708' },
+  { id: 'midnight', label: 'Midnight', value: '#0a0f1c' },
+  { id: 'gold', label: 'Gold', value: '#3a2a08' },
+  { id: 'green', label: 'Green', value: '#08160d' },
+  { id: 'plum', label: 'Plum', value: '#1a0a18' },
+]
+
 export const DEFAULT_SETTINGS: Settings = {
   general: {
     defaultLocation: 'D:\\Hermes',
@@ -43,6 +51,12 @@ export const DEFAULT_SETTINGS: Settings = {
     activeColor: 'green',
     backgroundColor: '#070708',
     backgroundBrightness: 100,
+    backgroundImage: '',
+    backgroundImageBlur: 8,
+    backgroundImageBrightness: 60,
+    backgroundOverlayColor: '#070708',
+    backgroundOverlayOpacity: 45,
+    backgroundImageVignette: 55,
     accentIntensity: 'medium',
     glassIntensity: 'medium',
     filmGrain: true,

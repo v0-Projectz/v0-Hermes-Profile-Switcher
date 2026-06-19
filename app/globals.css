@@ -184,6 +184,47 @@ html[data-theme='light'] .glass-strong {
       0 0 0 1px rgba(var(--accent-rgb), calc(0.2 * var(--accent-glow))),
       0 0 24px rgba(var(--accent-rgb), calc(0.18 * var(--accent-glow)));
   }
+  /* User background image backdrop (sits behind the frosted-glass UI). */
+  .app-bg-image {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: var(--bg-image, none);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(var(--bg-image-blur, 0px))
+      brightness(var(--bg-image-brightness, 1));
+    /* Scale up so the blur radius never reveals bare edges. */
+    transform: scale(1.12);
+  }
+  /* Color wash tinting the image toward the app palette. */
+  .app-bg-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: var(--bg-overlay-color, transparent);
+  }
+  /* Dedicated vignette for the image backdrop. */
+  .app-bg-vignette {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 100% 100% at 50% 45%,
+      transparent 42%,
+      rgba(0, 0, 0, var(--bg-vignette-alpha, 0)) 100%
+    );
+  }
+  /* All image-backdrop layers hide when no image is set. */
+  html[data-bg-image='false'] .app-bg-image,
+  html[data-bg-image='false'] .app-bg-overlay,
+  html[data-bg-image='false'] .app-bg-vignette {
+    display: none;
+  }
   /* Cinematic edge vignette overlay */
   .app-vignette {
     position: fixed;

@@ -169,6 +169,9 @@ export default function Page() {
 
   return (
     <TooltipProvider delay={250}>
+      <div aria-hidden className="app-bg-image" />
+      <div aria-hidden className="app-bg-overlay" />
+      <div aria-hidden className="app-bg-vignette" />
       <div aria-hidden className="app-vignette" />
       <div aria-hidden className="app-grain" />
       <div className="relative z-10 flex h-[100dvh] flex-col gap-3 overflow-hidden p-3 sm:p-4">

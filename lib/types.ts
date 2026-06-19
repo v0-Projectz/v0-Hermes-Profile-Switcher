@@ -57,6 +57,12 @@ export type Settings = {
     activeColor: 'green' | 'gold'
     backgroundColor: string
     backgroundBrightness: number
+    backgroundImage: string
+    backgroundImageBlur: number
+    backgroundImageBrightness: number
+    backgroundOverlayColor: string
+    backgroundOverlayOpacity: number
+    backgroundImageVignette: number
     accentIntensity: 'subtle' | 'medium' | 'bold'
     glassIntensity: 'low' | 'medium' | 'high'
     filmGrain: boolean

@@ -1,7 +1,16 @@
 'use client'
 
-import { FolderOpen, Play, Square, Terminal } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import {
+  FolderOpen,
+  ImageIcon,
+  Play,
+  Square,
+  Terminal,
+  Trash2,
+  Upload,
+} from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import {
   CopyableValue,
   SectionHeader,
@@ -23,6 +32,7 @@ import {
   BACKGROUND_PRESETS,
   DEFAULT_SETTINGS,
   HERMES_DESKTOP_VERSION,
+  OVERLAY_PRESETS,
 } from '@/lib/settings'
 import type { Settings } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -157,9 +167,59 @@ export function GeneralTab({ draft, setSection }: TabProps) {
   )
 }
 
+/**
+ * Read an image file and return a downscaled JPEG data URL. Large photos are
+ * resized to a max dimension and re-encoded so they fit comfortably in the
+ * settings store (which persists to localStorage).
+ */
+function fileToDownscaledDataUrl(
+  file: File,
+  maxDim = 1920,
+  quality = 0.82,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('Could not read file'))
+    reader.onload = () => {
+      const img = new Image()
+      img.onerror = () => reject(new Error('Invalid image'))
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+        const w = Math.round(img.width * scale)
+        const h = Math.round(img.height * scale)
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return reject(new Error('Canvas unavailable'))
+        ctx.drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.src = reader.result as string
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 /* --------------------------- APPEARANCE ---------------------------- */
 export function AppearanceTab({ draft, setSection }: TabProps) {
   const a = draft.appearance
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageUpload = async (file: File | undefined) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please choose an image file')
+      return
+    }
+    try {
+      const dataUrl = await fileToDownscaledDataUrl(file)
+      setSection('appearance', { backgroundImage: dataUrl })
+      toast.success('Background image set')
+    } catch {
+      toast.error('Could not load that image')
+    }
+  }
   const isPreset = ACCENT_PRESETS.some(
     (p) => p.value.toLowerCase() === a.accentColor.toLowerCase(),
   )
@@ -386,6 +446,231 @@ export function AppearanceTab({ draft, setSection }: TabProps) {
             </button>
           </div>
         </SettingRow>
+      </SettingCard>
+
+      <SectionHeader>Background Image</SectionHeader>
+      <SettingCard>
+        <SettingRow
+          label="Image"
+          helper="Sits behind the frosted-glass interface. Stored locally, downscaled to keep things fast."
+          stacked
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              void handleImageUpload(e.target.files?.[0])
+              e.target.value = ''
+            }}
+          />
+          {a.backgroundImage ? (
+            <div className="flex items-center gap-3">
+              <span
+                className="h-16 w-28 shrink-0 rounded-md border border-border bg-cover bg-center"
+                style={{ backgroundImage: `url("${a.backgroundImage}")` }}
+                aria-hidden
+              />
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="gap-1.5 border-border bg-secondary/40 hover:border-gold/30 hover:text-gold"
+                >
+                  <Upload className="size-3.5" /> Replace
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setSection('appearance', { backgroundImage: '' })
+                  }
+                  className="gap-1.5 text-muted-foreground hover:text-danger"
+                >
+                  <Trash2 className="size-3.5" /> Remove
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-secondary/30 px-4 py-6 text-muted-foreground transition-colors hover:border-gold/40 hover:text-gold"
+            >
+              <ImageIcon className="size-6" />
+              <span className="text-xs">Click to upload a background image</span>
+            </button>
+          )}
+        </SettingRow>
+
+        {a.backgroundImage ? (
+          <>
+            <SettingRow
+              label="Blur"
+              helper="Soften the image for that frosted depth-of-field look."
+              stacked
+            >
+              <div className="flex items-center gap-4">
+                <Slider
+                  value={[a.backgroundImageBlur]}
+                  min={0}
+                  max={40}
+                  step={1}
+                  onValueChange={(v) =>
+                    setSection('appearance', {
+                      backgroundImageBlur: Array.isArray(v) ? v[0] : v,
+                    })
+                  }
+                  className="flex-1"
+                  aria-label="Background image blur"
+                />
+                <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
+                  {a.backgroundImageBlur}px
+                </span>
+              </div>
+            </SettingRow>
+            <SettingRow
+              label="Image Brightness"
+              helper="Dim the photo so foreground panels stay readable."
+              stacked
+            >
+              <div className="flex items-center gap-4">
+                <Slider
+                  value={[a.backgroundImageBrightness]}
+                  min={10}
+                  max={130}
+                  step={5}
+                  onValueChange={(v) =>
+                    setSection('appearance', {
+                      backgroundImageBrightness: Array.isArray(v) ? v[0] : v,
+                    })
+                  }
+                  className="flex-1"
+                  aria-label="Background image brightness"
+                />
+                <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
+                  {a.backgroundImageBrightness}%
+                </span>
+              </div>
+            </SettingRow>
+            <SettingRow
+              label="Overlay Color"
+              helper="Tints the image toward a chosen hue to unify it with the UI."
+              stacked
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                {OVERLAY_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() =>
+                      setSection('appearance', {
+                        backgroundOverlayColor: p.value,
+                      })
+                    }
+                    className={cn(
+                      'flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors',
+                      a.backgroundOverlayColor.toLowerCase() ===
+                        p.value.toLowerCase()
+                        ? 'border-gold/50 bg-accent text-foreground'
+                        : 'border-border bg-secondary/40 text-muted-foreground hover:border-gold/30',
+                    )}
+                  >
+                    <span
+                      className="size-3 rounded-full border border-border"
+                      style={{ background: p.value }}
+                    />
+                    {p.label}
+                  </button>
+                ))}
+                <label className="flex items-center gap-2 rounded-full border border-border bg-secondary/40 px-3 py-1.5 text-xs text-muted-foreground">
+                  <input
+                    type="color"
+                    value={a.backgroundOverlayColor}
+                    onChange={(e) =>
+                      setSection('appearance', {
+                        backgroundOverlayColor: e.target.value,
+                      })
+                    }
+                    className="size-4 cursor-pointer rounded-full border-0 bg-transparent p-0"
+                    aria-label="Custom overlay color"
+                  />
+                  Custom
+                </label>
+              </div>
+            </SettingRow>
+            <SettingRow
+              label="Overlay Strength"
+              helper="How strongly the overlay color covers the image."
+              stacked
+            >
+              <div className="flex items-center gap-4">
+                <Slider
+                  value={[a.backgroundOverlayOpacity]}
+                  min={0}
+                  max={90}
+                  step={5}
+                  onValueChange={(v) =>
+                    setSection('appearance', {
+                      backgroundOverlayOpacity: Array.isArray(v) ? v[0] : v,
+                    })
+                  }
+                  className="flex-1"
+                  aria-label="Overlay strength"
+                />
+                <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
+                  {a.backgroundOverlayOpacity}%
+                </span>
+              </div>
+            </SettingRow>
+            <SettingRow
+              label="Vignette"
+              helper="Darkens the edges to focus attention on the center."
+              stacked
+            >
+              <div className="flex items-center gap-4">
+                <Slider
+                  value={[a.backgroundImageVignette]}
+                  min={0}
+                  max={90}
+                  step={5}
+                  onValueChange={(v) =>
+                    setSection('appearance', {
+                      backgroundImageVignette: Array.isArray(v) ? v[0] : v,
+                    })
+                  }
+                  className="flex-1"
+                  aria-label="Background image vignette"
+                />
+                <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
+                  {a.backgroundImageVignette}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSection('appearance', {
+                      backgroundImageBlur:
+                        DEFAULT_SETTINGS.appearance.backgroundImageBlur,
+                      backgroundImageBrightness:
+                        DEFAULT_SETTINGS.appearance.backgroundImageBrightness,
+                      backgroundOverlayColor:
+                        DEFAULT_SETTINGS.appearance.backgroundOverlayColor,
+                      backgroundOverlayOpacity:
+                        DEFAULT_SETTINGS.appearance.backgroundOverlayOpacity,
+                      backgroundImageVignette:
+                        DEFAULT_SETTINGS.appearance.backgroundImageVignette,
+                    })
+                  }
+                  className="shrink-0 text-xs text-muted-foreground transition-colors hover:text-gold"
+                >
+                  Reset
+                </button>
+              </div>
+            </SettingRow>
+          </>
+        ) : null}
       </SettingCard>
 
       <SectionHeader>Cinematic Depth</SectionHeader>
