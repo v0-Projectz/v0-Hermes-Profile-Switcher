@@ -13,11 +13,14 @@ import { ServiceTable } from '@/components/settings/service-table'
 import { ShortcutTable } from '@/components/settings/shortcut-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { listProfiles, testBackend } from '@/lib/api'
 import {
   ACCENT_PRESETS,
+  adjustBrightness,
   APP_VERSION,
+  BACKGROUND_PRESETS,
   DEFAULT_SETTINGS,
   HERMES_DESKTOP_VERSION,
 } from '@/lib/settings'
@@ -160,6 +163,9 @@ export function AppearanceTab({ draft, setSection }: TabProps) {
   const isPreset = ACCENT_PRESETS.some(
     (p) => p.value.toLowerCase() === a.accentColor.toLowerCase(),
   )
+  const isBgPreset = BACKGROUND_PRESETS.some(
+    (p) => p.value.toLowerCase() === a.backgroundColor.toLowerCase(),
+  )
   return (
     <div className="space-y-3">
       <SectionHeader>Theme &amp; Accent</SectionHeader>
@@ -280,6 +286,105 @@ export function AppearanceTab({ draft, setSection }: TabProps) {
               { value: 'high', label: 'High' },
             ]}
           />
+        </SettingRow>
+      </SettingCard>
+
+      <SectionHeader>Background</SectionHeader>
+      <SettingCard>
+        <SettingRow
+          label="Canvas Color"
+          helper="The base color behind the frosted-glass panels (dark theme)."
+          stacked
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            {BACKGROUND_PRESETS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() =>
+                  setSection('appearance', { backgroundColor: p.value })
+                }
+                className={cn(
+                  'flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors',
+                  a.backgroundColor.toLowerCase() === p.value.toLowerCase()
+                    ? 'border-gold/50 bg-accent text-foreground'
+                    : 'border-border bg-secondary/40 text-muted-foreground hover:border-gold/30',
+                )}
+              >
+                <span
+                  className="size-3 rounded-full border border-border"
+                  style={{ background: p.value }}
+                />
+                {p.label}
+              </button>
+            ))}
+            <label
+              className={cn(
+                'flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs',
+                isBgPreset
+                  ? 'border-border bg-secondary/40 text-muted-foreground'
+                  : 'border-gold/50 bg-accent text-foreground',
+              )}
+            >
+              <input
+                type="color"
+                value={a.backgroundColor}
+                onChange={(e) =>
+                  setSection('appearance', { backgroundColor: e.target.value })
+                }
+                className="size-4 cursor-pointer rounded-full border-0 bg-transparent p-0"
+                aria-label="Custom background color"
+              />
+              Custom
+            </label>
+          </div>
+        </SettingRow>
+        <SettingRow
+          label="Background Brightness"
+          helper="Lighten or darken the canvas without changing its hue."
+          stacked
+        >
+          <div className="flex items-center gap-4">
+            <Slider
+              value={[a.backgroundBrightness]}
+              min={40}
+              max={160}
+              step={5}
+              onValueChange={(v) =>
+                setSection('appearance', {
+                  backgroundBrightness: Array.isArray(v) ? v[0] : v,
+                })
+              }
+              className="flex-1"
+              aria-label="Background brightness"
+            />
+            <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
+              {a.backgroundBrightness}%
+            </span>
+            <span
+              className="size-7 shrink-0 rounded-md border border-border"
+              style={{
+                background: adjustBrightness(
+                  a.backgroundColor,
+                  a.backgroundBrightness,
+                ),
+              }}
+              aria-hidden
+            />
+            <button
+              type="button"
+              onClick={() =>
+                setSection('appearance', {
+                  backgroundColor: DEFAULT_SETTINGS.appearance.backgroundColor,
+                  backgroundBrightness:
+                    DEFAULT_SETTINGS.appearance.backgroundBrightness,
+                })
+              }
+              className="shrink-0 text-xs text-muted-foreground transition-colors hover:text-gold"
+            >
+              Reset
+            </button>
+          </div>
         </SettingRow>
       </SettingCard>
 

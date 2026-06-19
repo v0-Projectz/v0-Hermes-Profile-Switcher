@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react'
 import { getSettings, updateSettings } from '@/lib/api'
-import { DEFAULT_SETTINGS, hexToRgb } from '@/lib/settings'
+import { adjustBrightness, DEFAULT_SETTINGS, hexToRgb } from '@/lib/settings'
 import type { Settings } from '@/lib/types'
 
 type Appearance = Settings['appearance']
@@ -66,16 +66,29 @@ function applyAppearance(a: Appearance) {
   root.dataset.wordmarkGlow = a.wordmarkGlow ? 'true' : 'false'
 
   // Theme
+  let resolvedDark = true
   if (a.theme === 'light') {
     root.classList.remove('dark')
     root.dataset.theme = 'light'
+    resolvedDark = false
   } else if (a.theme === 'system') {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     root.classList.toggle('dark', prefersDark)
     root.dataset.theme = prefersDark ? 'dark' : 'light'
+    resolvedDark = prefersDark
   } else {
     root.classList.add('dark')
     root.dataset.theme = 'dark'
+  }
+
+  // Custom canvas background (dark only — light theme keeps its own palette).
+  if (resolvedDark) {
+    root.style.setProperty(
+      '--background',
+      adjustBrightness(a.backgroundColor, a.backgroundBrightness),
+    )
+  } else {
+    root.style.removeProperty('--background')
   }
 }
 

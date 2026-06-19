@@ -18,6 +18,15 @@ export const ACCENT_PRESETS: { id: string; label: string; value: string }[] = [
   { id: 'blue', label: 'Ice Blue', value: '#58A6FF' },
 ]
 
+export const BACKGROUND_PRESETS: { id: string; label: string; value: string }[] =
+  [
+    { id: 'obsidian', label: 'Obsidian', value: '#070708' },
+    { id: 'graphite', label: 'Graphite', value: '#101014' },
+    { id: 'midnight', label: 'Midnight', value: '#080b14' },
+    { id: 'espresso', label: 'Espresso', value: '#0e0a07' },
+    { id: 'forest', label: 'Forest', value: '#070c09' },
+  ]
+
 export const DEFAULT_SETTINGS: Settings = {
   general: {
     defaultLocation: 'D:\\Hermes',
@@ -32,6 +41,8 @@ export const DEFAULT_SETTINGS: Settings = {
     theme: 'dark',
     accentColor: '#F5B841',
     activeColor: 'green',
+    backgroundColor: '#070708',
+    backgroundBrightness: 100,
     accentIntensity: 'medium',
     glassIntensity: 'medium',
     filmGrain: true,
@@ -124,6 +135,22 @@ export function hexToRgb(hex: string): string {
   const g = (num >> 8) & 255
   const b = num & 255
   return `${r}, ${g}, ${b}`
+}
+
+/**
+ * Scale a hex color's brightness by a percentage (100 = unchanged). Channels
+ * are multiplied by percent/100 and clamped, returning a new hex string.
+ */
+export function adjustBrightness(hex: string, percent: number): string {
+  const rgb = hexToRgb(hex)
+    .split(',')
+    .map((n) => Number(n.trim()))
+  const factor = percent / 100
+  const scaled = rgb.map((c) =>
+    Math.max(0, Math.min(255, Math.round(c * factor))),
+  )
+  const toHex = (n: number) => n.toString(16).padStart(2, '0')
+  return `#${toHex(scaled[0])}${toHex(scaled[1])}${toHex(scaled[2])}`
 }
 
 /** Deep-merge persisted settings over defaults so new keys always resolve. */
