@@ -1,9 +1,12 @@
+import { DEFAULT_SETTINGS, mergeSettings } from './settings'
 import type {
   ActionResult,
   AdoptProfileInput,
   CreateProfileInput,
+  MonitoredService,
   Profile,
   Service,
+  Settings,
 } from './types'
 
 // --- Seed data (mirrors the real backend shape) ---
@@ -128,18 +131,116 @@ export async function adoptProfile(
   return delay({ ok: true, message: `Adopted project as ${input.name}` })
 }
 
-export async function getServiceHealth(): Promise<Service[]> {
-  // Deterministic baseline so all three dot states are always represented
-  // (green = online, amber = checking, gray = offline). The gateway flickers
-  // subtly between online/checking to feel live without losing the demo.
-  const gateway: Service['status'] = Math.random() > 0.5 ? 'online' : 'checking'
+// Deterministic baseline so all three dot states are always represented
+// (green = online, amber = checking, gray = offline) regardless of config.
+const STATUS_MAP: Record<string, Service['status']> = {
+  litellm: 'online',
+  ngrok: 'checking',
+  lmstudio: 'offline',
+  gateway: 'online',
+}
+
+/**
+ * Probe the configured set of monitored services. Real socket probes drop in
+ * later — for now statuses are deterministic with a subtle gateway flicker.
+ */
+export async function probeServices(
+  services: MonitoredService[],
+): Promise<Service[]> {
+  const result = services
+    .filter((s) => s.enabled)
+    .map<Service>((s) => {
+      const base = STATUS_MAP[s.id] ?? 'online'
+      const status =
+        s.id === 'gateway'
+          ? Math.random() > 0.5
+            ? 'online'
+            : 'checking'
+          : base
+      return {
+        id: s.id,
+        label: s.name.toUpperCase(),
+        port: s.port ? String(s.port) : undefined,
+        status,
+      }
+    })
+  return delay(result, 150)
+}
+
+// --- Settings persistence (localStorage now; real config backend later) ---
+const SETTINGS_KEY = 'profile-jedi:settings'
+
+export async function getSettings(): Promise<Settings> {
+  if (typeof window === 'undefined') return structuredClone(DEFAULT_SETTINGS)
+  try {
+    const raw = window.localStorage.getItem(SETTINGS_KEY)
+    return mergeSettings(raw ? JSON.parse(raw) : null)
+  } catch {
+    return structuredClone(DEFAULT_SETTINGS)
+  }
+}
+
+export async function updateSettings(next: Settings): Promise<Settings> {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
+  }
+  return next
+}
+
+export async function resetSettings(): Promise<Settings> {
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem(SETTINGS_KEY)
+  }
+  return structuredClone(DEFAULT_SETTINGS)
+}
+
+// --- Mock backend stubs (wired to real PowerShell scripts later) ---
+export async function testBackend(): Promise<ActionResult> {
+  return delay({
+    ok: true,
+    message: `Backend reachable — resolved ${profiles.length} profiles`,
+  })
+}
+
+export async function exportRegistry(): Promise<ActionResult> {
+  return delay({ ok: true, message: 'Registry exported to profiles.backup.json' })
+}
+
+export async function importRegistry(): Promise<ActionResult> {
+  return delay({ ok: true, message: 'Registry imported successfully' })
+}
+
+export async function backupNow(): Promise<ActionResult> {
+  return delay({ ok: true, message: 'Snapshot saved (settings + registry)' })
+}
+
+export async function restoreBackup(): Promise<ActionResult> {
+  return delay({ ok: true, message: 'Restored from latest backup' })
+}
+
+export async function toggleGoogleApi(
+  on: boolean,
+): Promise<ActionResult> {
+  return delay({
+    ok: true,
+    message: on ? 'Google API stack started' : 'Google API stack stopped',
+  })
+}
+
+export async function getLastCommandOutput(): Promise<string> {
   return delay(
     [
-      { id: 'litellm', label: 'LITELLM', port: '4000', status: 'online' },
-      { id: 'ngrok', label: 'NGROK', port: '4040', status: 'checking' },
-      { id: 'lmstudio', label: 'LM STUDIO', port: '1234', status: 'offline' },
-      { id: 'gateway', label: 'HERMES GATEWAY', status: gateway },
-    ],
-    150,
+      'PS D:\\Hermes\\custom-scriptz\\profile-switcher> .\\Switch-Hermes-Profile.ps1 -Action list',
+      '',
+      'Resolving profile registry from profiles.json ...',
+      '  [1] JonBeatz         D:\\Hermes\\JonBeatz            (active)',
+      '  [2] MyStudioChannel  D:\\Cursor_Projectz\\MyStudioChannel',
+      '  [3] ClientX          D:\\Hermes\\ClientX',
+      '  [4] NovaMira         D:\\Hermes\\NovaMira',
+      '',
+      'Done. 4 profiles resolved in 142ms.',
+      'Exit code: 0',
+    ].join('\n'),
+    200,
   )
 }
