@@ -2,6 +2,13 @@ import type { Profile } from './types'
 
 const SCRIPT = 'Switch-Hermes-Profile.ps1'
 
+/** PowerShell scripts behind the local LiteLLM + ngrok (Google API) stack. */
+export const GOOGLE_API_SCRIPTS = {
+  start: 'start-google-api-desktop.ps1',
+  stop: 'stop-google-api-desktop.ps1',
+  restart: 'restart-google-api-desktop.ps1',
+} as const
+
 export function cliProfileHome(slug: string): string {
   return `%LOCALAPPDATA%\\hermes\\profiles\\${slug}`
 }

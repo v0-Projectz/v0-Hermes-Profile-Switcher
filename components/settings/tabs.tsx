@@ -3,13 +3,12 @@
 import {
   FolderOpen,
   ImageIcon,
-  Play,
-  Square,
   Terminal,
   Trash2,
   Upload,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { GoogleApiCard } from '@/components/google-api-card'
 import { toast } from 'sonner'
 import {
   CopyableValue,
@@ -748,9 +747,8 @@ export function AppearanceTab({ draft, setSection }: TabProps) {
 }
 
 /* ----------------------------- CONSOLE ----------------------------- */
-export function ConsoleTab({ draft, setSection, runAction }: TabProps) {
+export function ConsoleTab({ draft, setSection }: TabProps) {
   const c = draft.console
-  const [googleOn, setGoogleOn] = useState(false)
   return (
     <div className="space-y-3">
       <SectionHeader>J.A.R.V.I.S. Console</SectionHeader>
@@ -830,53 +828,7 @@ export function ConsoleTab({ draft, setSection, runAction }: TabProps) {
       />
 
       <SectionHeader>Google API Stack</SectionHeader>
-      <SettingCard>
-        <SettingRow
-          label="Google API"
-          helper="Runs your D:\Hermes\custom-scriptz\google-api start/stop scripts."
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span
-                className="size-2 rounded-full"
-                style={{
-                  background: googleOn ? 'var(--success)' : 'var(--text-muted-2)',
-                  boxShadow: googleOn ? '0 0 8px var(--success)' : 'none',
-                }}
-              />
-              {googleOn ? 'Running' : 'Stopped'}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setGoogleOn(true)
-                runAction(async () => ({
-                  ok: true,
-                  message: 'Google API stack started',
-                }))
-              }}
-              className="gap-1.5 border-border bg-secondary/40 hover:border-gold/30 hover:text-gold"
-            >
-              <Play className="size-3.5" /> Start
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setGoogleOn(false)
-                runAction(async () => ({
-                  ok: true,
-                  message: 'Google API stack stopped',
-                }))
-              }}
-              className="gap-1.5 border-border bg-secondary/40 hover:border-danger/40 hover:text-danger"
-            >
-              <Square className="size-3.5" /> Stop
-            </Button>
-          </div>
-        </SettingRow>
-      </SettingCard>
+      <GoogleApiCard />
     </div>
   )
 }

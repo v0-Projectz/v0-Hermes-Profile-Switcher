@@ -1,6 +1,7 @@
 'use client'
 
 import { FolderPlus, Plus, Repeat } from 'lucide-react'
+import { GoogleApiControl } from '@/components/google-api-control'
 import { ServiceCapsule } from '@/components/service-capsule'
 import { useSettings } from '@/components/settings-provider'
 import { Waveform } from '@/components/waveform'
@@ -28,16 +29,20 @@ export function JarvisFooter({ services, onSwitch, onCreate, onAdopt }: Props) {
         </span>
       </div>
 
-      {/* Center: service health */}
+      {/* Center: service health — LiteLLM + ngrok are folded into the
+          interactive Google API cluster; remaining services stay as capsules. */}
       <div className="flex flex-wrap items-center justify-center gap-2">
-        {services.map((s) => (
-          <ServiceCapsule
-            key={s.id}
-            service={s}
-            showPort={c.showPorts}
-            style={c.capsuleStyle}
-          />
-        ))}
+        <GoogleApiControl />
+        {services
+          .filter((s) => s.id !== 'litellm' && s.id !== 'ngrok')
+          .map((s) => (
+            <ServiceCapsule
+              key={s.id}
+              service={s}
+              showPort={c.showPorts}
+              style={c.capsuleStyle}
+            />
+          ))}
       </div>
 
       {/* Right: quick actions */}

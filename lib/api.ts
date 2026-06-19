@@ -218,6 +218,93 @@ export async function restoreBackup(): Promise<ActionResult> {
   return delay({ ok: true, message: 'Restored from latest backup' })
 }
 
+// --- Google API stack (LiteLLM + ngrok) lifecycle (mocked) ---
+// Three-stack-aware status: LiteLLM (4000), ngrok tunnel (4040), Vertex reach.
+// The real PowerShell-backed control drops in later; for now we simulate a
+// realistic start/stop lifecycle entirely in module memory.
+export type GoogleApiState =
+  | 'offline'
+  | 'starting'
+  | 'online'
+  | 'degraded'
+  | 'stopping'
+
+export type GoogleApiStatus = {
+  state: GoogleApiState
+  litellm: boolean
+  ngrok: boolean
+  vertex: boolean
+  publicUrl: string | null
+  port: number
+}
+
+const GOOGLE_PUBLIC_URL = 'https://pushy-water-reformer.ngrok-free.dev'
+
+const GOOGLE_OFFLINE: GoogleApiStatus = {
+  state: 'offline',
+  litellm: false,
+  ngrok: false,
+  vertex: false,
+  publicUrl: null,
+  port: 4000,
+}
+
+const GOOGLE_ONLINE: GoogleApiStatus = {
+  state: 'online',
+  litellm: true,
+  ngrok: true,
+  vertex: true,
+  publicUrl: GOOGLE_PUBLIC_URL,
+  port: 4000,
+}
+
+let googleApi: GoogleApiStatus = { ...GOOGLE_OFFLINE }
+let googleTimer: ReturnType<typeof setTimeout> | null = null
+
+function clearGoogleTimer() {
+  if (googleTimer) {
+    clearTimeout(googleTimer)
+    googleTimer = null
+  }
+}
+
+export async function getGoogleApiStatus(): Promise<GoogleApiStatus> {
+  return { ...googleApi }
+}
+
+export async function startGoogleApi(): Promise<void> {
+  console.log(JSON.stringify({ action: 'google-api:start' }))
+  clearGoogleTimer()
+  googleApi = { ...GOOGLE_OFFLINE, state: 'starting' }
+  googleTimer = setTimeout(() => {
+    googleApi = { ...GOOGLE_ONLINE }
+    googleTimer = null
+  }, 2000)
+}
+
+export async function stopGoogleApi(): Promise<void> {
+  console.log(JSON.stringify({ action: 'google-api:stop' }))
+  clearGoogleTimer()
+  googleApi = { ...googleApi, state: 'stopping' }
+  googleTimer = setTimeout(() => {
+    googleApi = { ...GOOGLE_OFFLINE }
+    googleTimer = null
+  }, 1500)
+}
+
+export async function restartGoogleApi(): Promise<void> {
+  console.log(JSON.stringify({ action: 'google-api:restart' }))
+  clearGoogleTimer()
+  googleApi = { ...googleApi, state: 'stopping' }
+  googleTimer = setTimeout(() => {
+    googleApi = { ...GOOGLE_OFFLINE, state: 'starting' }
+    googleTimer = setTimeout(() => {
+      googleApi = { ...GOOGLE_ONLINE }
+      googleTimer = null
+    }, 2000)
+  }, 1500)
+}
+
 export async function toggleGoogleApi(
   on: boolean,
 ): Promise<ActionResult> {
